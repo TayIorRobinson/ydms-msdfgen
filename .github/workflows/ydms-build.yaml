@@ -56,3 +56,27 @@ jobs:
           name: msdfgen-windows
           path: build/out/Release/*.dll
 
+  build-macos:
+    runs-on: macos-latest # arm64
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          brew install freetype
+      - name: Create build dirs
+        run: |
+          mkdir build
+          cd build
+          echo "builddir=$(pwd)" >> "$GITHUB_ENV"
+      - name: Build msdfgen macOS
+        working-directory: ${{ env.builddir }}
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=Release -DMSDFGEN_BUILD_STANDALONE=OFF -DMSDFGEN_BUILD_SHARED_LIBRARY=ON ..
+          make -j3
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: msdfgen-macos-arm
+          path: ${{ env.builddir }}/out/*.dylib
+
